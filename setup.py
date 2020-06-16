@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="uenginecli",
-    version="1.0.0",
+    version="1.0.1",
     description="a helper client library for accessing uengine-based APIs",
     url="https://github.com/viert/uenginecli",
     author="Pavel Vorobyov",
