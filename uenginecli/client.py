@@ -19,13 +19,21 @@ class UEngineClient:
 
     RESTRICTED_OPTIONS = ('json', 'headers',)
 
-    def __init__(self, baseurl, api_token, api_prefix=None, options=None):
+    def __init__(self, baseurl, api_token, api_prefix=None, requests_options=None, user_agent="uenginecli"):
         self.baseurl = baseurl
         self.api_prefix = api_prefix
         if self.api_prefix and self.api_prefix.endswith("/"):
             self.api_prefix = self.api_prefix[:-1]
+        self.ua = user_agent
+        self.session = None
+        self.reset_session()
         self.set_token(api_token)
-        self.set_options(options)
+        self.set_options(requests_options)
+
+    def reset_session(self):
+        self.session = requests.Session()
+        default_ua = self.session.headers["User-Agent"]
+        self.session.headers["User-Agent"] = f"{self.ua} {default_ua}"
 
     def set_options(self, options=None):
         self.options = options
@@ -36,7 +44,7 @@ class UEngineClient:
                 del(self.options[opt])
 
     def set_token(self, api_token):
-        self.api_token = api_token
+        self.session.headers.update({"X-Api-Auth-Token": api_token})
 
     def request(self, method, path, json=None):
         if not path.startswith("/"):
@@ -46,12 +54,11 @@ class UEngineClient:
             path = f"{self.api_prefix}/{path}"
 
         url = f"{self.baseurl}{path}"
-        headers = {"X-Api-Auth-Token": self.api_token}
         if method == "GET":
-            response = requests.get(url, headers=headers, **self.options)
+            response = self.session.get(url, **self.options)
         else:
-            response = requests.request(
-                method, url, headers=headers, json=json, **self.options)
+            response = self.session.request(
+                method, url, json=json, **self.options)
 
         resp_content = response.json()
 
