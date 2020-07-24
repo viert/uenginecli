@@ -62,7 +62,7 @@ class UEngineClient:
 
         resp_content = response.json()
 
-        if response.status_code == 200:
+        if 200 <= response.status_code < 300:
             return resp_content
 
         err = resp_content.get("error") or resp_content
